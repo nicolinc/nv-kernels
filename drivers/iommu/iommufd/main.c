@@ -8,6 +8,7 @@
  */
 #define pr_fmt(fmt) "iommufd: " fmt
 
+#include <linux/debugfs.h>
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/module.h>
@@ -604,6 +605,9 @@ static struct miscdevice vfio_misc_dev = {
 	.mode = 0666,
 };
 
+bool hack_pte;
+EXPORT_SYMBOL_NS_GPL(hack_pte, IOMMUFD);
+
 static int __init iommufd_init(void)
 {
 	int ret;
@@ -611,6 +615,13 @@ static int __init iommufd_init(void)
 	ret = misc_register(&iommu_misc_dev);
 	if (ret)
 		return ret;
+
+#ifdef CONFIG_IOMMU_DEBUGFS
+	if (iommu_debugfs_dir) {
+		debugfs_create_bool("hack_pte", 0644,
+				    iommu_debugfs_dir, &hack_pte);
+	}
+#endif
 
 	if (IS_ENABLED(CONFIG_IOMMUFD_VFIO_CONTAINER)) {
 		ret = misc_register(&vfio_misc_dev);

@@ -179,6 +179,8 @@ out_free:
 	return rc;
 }
 
+extern bool hack_pte;
+
 static int conv_iommu_prot(u32 map_flags)
 {
 	/*
@@ -190,6 +192,8 @@ static int conv_iommu_prot(u32 map_flags)
 	 */
 	int iommu_prot = IOMMU_CACHE;
 
+	if (hack_pte)
+		iommu_prot = 0; /* non-cacheable */
 	if (map_flags & IOMMU_IOAS_MAP_WRITEABLE)
 		iommu_prot |= IOMMU_WRITE;
 	if (map_flags & IOMMU_IOAS_MAP_READABLE)
